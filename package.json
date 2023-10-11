@@ -7,8 +7,6 @@
     "dev": "nodemon server.js",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js"
-  },"engines": {
-    "node": ">=18.18.0"
   },
   "dependencies": {
     "cors": "2.8.5",
