@@ -5,6 +5,7 @@ const Contact = require("../../models/contact");
 const router = express.Router();
 const { isValidObjectId } = require("mongoose");
 const { addSchema, updateFavoriteSchema } = require("../../schemas/contact");
+const { isValidId } = require("../../middlewares/isValidId");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -15,12 +16,9 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/:contactId", async (req, res, next) => {
+router.get("/:contactId", isValidId, async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
-      throw HttpError(400, `${contactId} is not valid ID`);
-    }
     const result = await Contact.findById(contactId);
     if (!result) {
       throw HttpError(404, "Not found");
@@ -44,16 +42,14 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:contactId", isValidId, async (req, res, next) => {
   try {
     const { error } = addSchema.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
     const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
-      throw HttpError(400, `${contactId} is not valid ID`);
-    }
+
     const result = await Contact.findByIdAndUpdate(contactId, req.body, {
       new: true,
     });
@@ -64,12 +60,9 @@ router.put("/:contactId", async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId/favorite", async (req, res, next) => {
+router.patch("/:contactId/favorite", isValidId, async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
-      throw HttpError(400, `${contactId} is not valid ID`);
-    }
 
     const { error } = updateFavoriteSchema.validate(req.body);
     if (error) {
@@ -88,7 +81,7 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", isValidId, async (req, res, next) => {
   try {
     const { contactId } = req.params;
     if (!isValidObjectId(contactId)) {
