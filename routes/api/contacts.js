@@ -5,7 +5,6 @@ const Contact = require("../../models/contact");
 const router = express.Router();
 const { isValidObjectId } = require("mongoose");
 const { addSchema, updateFavoriteSchema } = require("../../schemas/contact");
-const { isValidId } = require("../../middlewares/isValidId");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -81,7 +80,7 @@ router.patch("/:contactId/favorite", isValidId, async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", isValidId, async (req, res, next) => {
+router.delete("/:contactId", async (req, res, next) => {
   try {
     const { contactId } = req.params;
     if (!isValidObjectId(contactId)) {
