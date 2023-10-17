@@ -2,9 +2,9 @@ const express = require("express");
 
 const HttpError = require("../../helpers/HttpError");
 const Contact = require("../../models/contact");
+const { addSchema, updateFavoriteSchema } = require("../../schemasJOI/contact");
+const { isValidId } = require("../../middlewares/isValidId");
 const router = express.Router();
-const { isValidObjectId } = require("mongoose");
-const { addSchema, updateFavoriteSchema } = require("../../schemas/contact");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -80,12 +80,9 @@ router.patch("/:contactId/favorite", isValidId, async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", isValidId, async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    if (!isValidObjectId(contactId)) {
-      throw HttpError(400, `${contactId} is not valid ID`);
-    }
 
     const result = await Contact.findByIdAndRemove(contactId);
 
