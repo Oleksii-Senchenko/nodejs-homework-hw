@@ -8,8 +8,8 @@ const fs = require("fs");
 const path = require("path");
 const gravatar = require("gravatar");
 const Jimp = require("jimp");
-const { readFile } = require("fs/promises");
-const { isUtf8 } = require("buffer");
+const { nanoid } = require("nanoid");
+const sendEmail = require("../helpers/sendEmail");
 
 const { SECRET_KEY } = process.env;
 class UserController {
@@ -23,11 +23,23 @@ class UserController {
 
     const hashPass = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
+
+    const verificationtoken = nanoid();
+
     const newUser = await User.create({
       ...req.body,
       password: hashPass,
       avatarURL,
+      verificationtoken,
     });
+
+    const mail = {
+      to: "wifohow843@othao.com",
+      subject: "Verification email",
+      html: `<a target="blank" href="http://localhost:3000/api/users/verify/${verificationtoken}">Verify your email</a>`,
+    };
+
+    await sendEmail(mail);
 
     res.status(201).json({
       user: {
@@ -52,6 +64,9 @@ class UserController {
       throw HttpError(401, "Email or password is wrong");
     }
 
+    if (!user.verify) {
+      throw HttpError(401, "Chek email");
+    }
     const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "12h" });
 
     await User.findByIdAndUpdate(user._id, { token });
@@ -69,47 +84,6 @@ class UserController {
     await User.findByIdAndUpdate(_id, { token: null });
     res.status(204).json();
   });
-
-  current = tryHandler(async (req, res, next) => {
-    const { email, subscription } = req.user;
-
-    res.json({
-      email,
-      subscription,
-    });
-  });
-
-  updateAvatar = tryHandler(async (req, res, next) => {
-    const { path: tempUpload, originalname } = req.file;
-   
-  
-
-
-    const { _id: id } = req.user._id;
-    const resultUpload = path.join(
-      __dirname,
-      "../",
-      "public",
-      "avatars",
-      `${id}_${originalname}`
-    );
-
-    const image = await Jimp.read(tempUpload);
-
-    image.resize(250, 250);
-
-    await fs.renameSync(tempUpload, resultUpload);
-    
-    const avatarURL = path.join("public", "avatars", originalname);
-
-    await User.findByIdAndUpdate(req.user._id, { avatarURL });
-    res.json({ avatarURL });
-  });
-
-  
 }
-
-
-
 
 module.exports = new UserController();
