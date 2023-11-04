@@ -3,22 +3,30 @@ const tryHandler = require("../middlewares/tryHandler");
 const User = require("../models/user");
 
 class UsersController {
+  
   verifyEmail = tryHandler(async (req, res, next) => {
     const { verificationToken } = req.params;
     const user = await User.findOne({ verificationToken });
+  
     if (!user) {
-      throw HttpError(400, "virify token is not valid");
+      throw HttpError(400, "Verification token is not valid");
     }
+  
+    if (user.verify) {
+      return res.json({
+        message: "User is already verified",
+      });
+    }
+  
     await User.findByIdAndUpdate(user._id, {
       verify: true,
       verificationToken: null,
     });
-
+  
     res.json({
-      message: "Verify succsess",
+      message: "Verification success",
     });
   });
-
   current = tryHandler(async (req, res, next) => {
     const { email, subscription } = req.user;
 

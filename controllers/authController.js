@@ -24,19 +24,19 @@ class UserController {
     const hashPass = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
 
-    const verificationtoken = nanoid();
+    const verificationToken = nanoid();
 
     const newUser = await User.create({
       ...req.body,
       password: hashPass,
       avatarURL,
-      verificationtoken,
+      verificationToken,
     });
 
     const mail = {
       to: "wifohow843@othao.com",
       subject: "Verification email",
-      html: `<a target="blank" href="http://localhost:3000/api/users/verify/${verificationtoken}">Verify your email</a>`,
+      html: `<a target="blank" href="http://localhost:3000/api/users/verify/${verificationToken}">Verify your email</a>`,
     };
 
     await sendEmail(mail);

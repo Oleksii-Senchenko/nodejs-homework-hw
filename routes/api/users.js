@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get(
   "/verify/:verificationToken",
-  authenticate,
+  
   userControllers.verifyEmail
 );
 router.get("/current", authenticate, userControllers.current);
